@@ -8,6 +8,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true, // Automatically remove properties that do not have any decorators
       forbidNonWhitelisted: true, // Throw an error if a property is not whitelisted
+      transform: true, // Automatically transform payloads to DTO instances
     }),
   );
   await app.listen(process.env.PORT ?? 3000);
