@@ -1,0 +1,28 @@
+import { Injectable } from '@nestjs/common';
+import { CreatePostDto } from 'src/posts/dtos/create.post.dto';
+import { UsersService } from 'src/users/providers/users.service';
+
+@Injectable()
+export class PostsService {
+  constructor(private readonly userService: UsersService) {}
+
+  public findAll() {
+    return [
+      { title: 'Post 1', content: 'Content of post 1' },
+      { title: 'Post 2', content: 'Content of post 2' },
+    ];
+  }
+  public findAllByUser(userId: string) {
+    const user = this.userService.findById(userId);
+    if (!user) {
+      return [];
+    }
+    return [
+      { title: `Post by ${user.id}`, content: 'Content of post by user' },
+    ];
+  }
+  public createPost(createPostDto: CreatePostDto) {
+    // Logic to create a post can be added here
+    return { createPostDto };
+  }
+}
