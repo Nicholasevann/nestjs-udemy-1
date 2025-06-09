@@ -1,6 +1,9 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { AuthService } from 'src/auth/providers/auth.service';
+import { Repository } from 'typeorm';
+import { User } from '../user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 /**
  * Service for managing users.
@@ -14,8 +17,9 @@ export class UsersService {
   constructor(
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
-
   /**
    * Find all users with pagination.
    * @param limit Number of users per page.
@@ -45,8 +49,12 @@ export class UsersService {
    * @param user User data.
    * @returns Created user object.
    */
-  public createUser(user: CreateUserDto) {
-    console.log('Creating user:', user);
-    return { id: 1, ...user };
+  public async createUser(user: CreateUserDto) {
+    const existingUser = await this.userRepository.findOne({
+      where: { email: user.email },
+    });
+    let newUser = this.userRepository.create(user);
+    newUser = await this.userRepository.save(newUser);
+    return newUser;
   }
 }
