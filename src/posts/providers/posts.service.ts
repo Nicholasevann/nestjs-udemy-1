@@ -5,6 +5,7 @@ import { PatchPostDto } from '../dtos/patch-post.dto';
 import { Post } from '../post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { MetaOption } from 'src/meta-options/meta-option.entity';
 
 @Injectable()
 export class PostsService {
@@ -12,6 +13,8 @@ export class PostsService {
     private readonly userService: UsersService,
     @InjectRepository(Post)
     private postRepository: Repository<Post>,
+    @InjectRepository(MetaOption)
+    private metaOptionsRepository: Repository<MetaOption>,
   ) {}
 
   public findAll() {
@@ -20,8 +23,15 @@ export class PostsService {
       { title: 'Post 2', content: 'Content of post 2' },
     ];
   }
-  public findAllByUser(userId: string) {
+  public async findAllByUser(userId: string) {
     const user = this.userService.findById(userId);
+    const post = await this.postRepository.find({
+      // can use eager or manual
+      // relations: {
+      //   metaOptions: true,
+      // },
+    });
+    return post;
     if (!user) {
       return [];
     }
@@ -29,12 +39,36 @@ export class PostsService {
       { title: `Post by ${user.id}`, content: 'Content of post by user' },
     ];
   }
-  public createPost(createPostDto: CreatePostDto) {
+  public async createPost(createPostDto: CreatePostDto) {
     // Logic to create a post can be added here
-    return { data: createPostDto, message: 'Post created successfully' };
+
+    const post = this.postRepository.create(createPostDto);
+    return await this.postRepository.save(post);
+    // return {
+    //   data: this.postRepository.create(createPostDto),
+    //   message: 'Post created successfully',
+    // };
   }
   public patchPost(patchPostDto: PatchPostDto) {
     // Logic to create a post can be added here
     return { data: patchPostDto, message: 'Post updated successfully' };
+  }
+
+  public async delete(id: number) {
+    // // find post
+    const post = await this.postRepository.findOneBy({ id });
+    // // delete post
+    // await this.postRepository.delete(id);
+    // // delete meta options
+    // await this.metaOptionsRepository.delete(post?.metaOptions?.id ?? 0);
+    // // confirmation
+    const inversePost = await this.metaOptionsRepository.find({
+      where: { id: post?.metaOptions?.id },
+      relations: {
+        post: true,
+      },
+    });
+    console.log(inversePost);
+    return { deleted: true, id };
   }
 }

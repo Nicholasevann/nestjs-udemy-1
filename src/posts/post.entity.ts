@@ -1,5 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PostTypeEnum, StatusEnum } from './dtos/create-post.dto';
+import { MetaOption } from 'src/meta-options/meta-option.entity';
 
 @Entity()
 export class Post {
@@ -33,6 +40,12 @@ export class Post {
   @Column({ type: 'simple-array', nullable: true })
   tags?: string[];
 
-  @Column({ type: 'json', nullable: true })
-  metaOptions?: any[];
+  @OneToOne(() => MetaOption, (metaOption) => metaOption.post, {
+    // automatic add update delete
+    cascade: true,
+    // automatic show relation data
+    eager: true,
+  })
+  @JoinColumn()
+  metaOptions?: MetaOption;
 }
