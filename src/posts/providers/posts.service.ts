@@ -68,9 +68,30 @@ export class PostsService {
     //   message: 'Post created successfully',
     // };
   }
-  public patchPost(patchPostDto: PatchPostDto) {
-    // Logic to create a post can be added here
-    return { data: patchPostDto, message: 'Post updated successfully' };
+  public async patchPost(patchPostDto: PatchPostDto) {
+    // find the tags
+    const tags = await this.tagsService.findMultipleTags(
+      patchPostDto?.tags ?? [],
+    );
+    // find post
+    const post = await this.postRepository.findOneBy({ id: patchPostDto.id });
+    if (!post) {
+      throw new Error('Post not found');
+    }
+    post.title = patchPostDto.title ?? post.title;
+    post.content = patchPostDto.content ?? post.content;
+    post.status = patchPostDto.status ?? post.status;
+    post.postType = patchPostDto.postType ?? post.postType;
+    post.slug = patchPostDto.slug ?? post.slug;
+    post.featuredImageUrl = patchPostDto.featuredImageUrl
+      ? patchPostDto.featuredImageUrl
+      : post.featuredImageUrl;
+    post.publishOn = patchPostDto.publishOn
+      ? patchPostDto.publishOn
+      : post.publishOn;
+
+    post.tags = tags;
+    return await this.postRepository.save(post);
   }
 
   public async delete(id: number) {

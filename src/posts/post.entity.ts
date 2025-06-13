@@ -42,7 +42,7 @@ export class Post {
   @Column({ type: 'timestamp', nullable: true })
   publishOn?: Date;
 
-  @ManyToMany(() => Tag)
+  @ManyToMany(() => Tag, (tag) => tag.posts, { eager: true })
   @JoinTable()
   tags?: Tag[];
 
