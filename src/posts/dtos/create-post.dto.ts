@@ -9,6 +9,8 @@ import {
   IsISO8601,
   IsArray,
   ValidateNested,
+  isInt,
+  IsInt,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -104,13 +106,11 @@ export class CreatePostDto {
   @ApiPropertyOptional({
     description: 'Tags for the post',
     example: ['nestjs', 'backend', 'typescript'],
-    type: [String],
   })
   @IsArray()
   @IsOptional()
-  @IsString({ each: true })
-  @MinLength(3, { each: true })
-  tags?: string[];
+  @IsInt({ each: true })
+  tags?: number[];
 
   @ApiPropertyOptional({
     description: 'Meta options for the post',
@@ -120,4 +120,13 @@ export class CreatePostDto {
   @ValidateNested()
   @Type(() => CreatePostMetaOptionsDto)
   metaOptions?: CreatePostMetaOptionsDto;
+
+  @ApiProperty({
+    type: 'integer',
+    required: true,
+    example: 1,
+  })
+  @IsInt()
+  @IsNotEmpty()
+  authorId: number;
 }

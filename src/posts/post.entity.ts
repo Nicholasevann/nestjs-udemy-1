@@ -2,11 +2,16 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PostTypeEnum, StatusEnum } from './dtos/create-post.dto';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
+import { User } from 'src/users/user.entity';
+import { Tag } from 'src/tags/tag.entity';
 
 @Entity()
 export class Post {
@@ -37,8 +42,9 @@ export class Post {
   @Column({ type: 'timestamp', nullable: true })
   publishOn?: Date;
 
-  @Column({ type: 'simple-array', nullable: true })
-  tags?: string[];
+  @ManyToMany(() => Tag)
+  @JoinTable()
+  tags?: Tag[];
 
   @OneToOne(() => MetaOption, (metaOption) => metaOption.post, {
     // automatic add update delete
@@ -46,6 +52,8 @@ export class Post {
     // automatic show relation data
     eager: true,
   })
-  @JoinColumn()
   metaOptions?: MetaOption;
+
+  @ManyToOne(() => User, (user) => user.posts, { eager: true })
+  author: User;
 }
