@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/providers/auth.service';
 import { Repository } from 'typeorm';
-import { User } from '../user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { User } from '../user.entity';
 
 /**
  * Service for managing users.
@@ -20,6 +22,7 @@ export class UsersService {
     private readonly authService: AuthService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
   /**
    * Find all users with pagination.
@@ -29,7 +32,8 @@ export class UsersService {
    */
   public findAll(limit: number, page: number) {
     const isAuthenticated = this.authService.isAuthenticated('sample-token');
-    console.log('Is authenticated:', isAuthenticated);
+    const environment = this.configService.get('S3_BUCKET');
+    console.log(environment);
     return [
       { firstName: 'John', email: 'john.doe@example.com' },
       { firstName: 'Jane', email: 'jane.doe@example.com' },
