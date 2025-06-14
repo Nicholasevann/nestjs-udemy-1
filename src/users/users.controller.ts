@@ -35,7 +35,7 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-  @Get('/:id/{:optional}')
+  @Get('/:id')
   @ApiOperation({
     summary: 'Get user by ID',
     description:
@@ -63,7 +63,7 @@ export class UsersController {
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
   ) {
-    console.log(getUserParamDto, limit, page);
+    return this.usersService.findById(getUserParamDto.id ?? 0);
   }
   @Patch('/:id')
   public updateUser(@Body() patchUserDto: PatchUserDto) {

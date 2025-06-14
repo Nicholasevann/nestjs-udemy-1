@@ -1,12 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 
-import { ConfigService } from '@nestjs/config';
+import { ConfigService, ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/providers/auth.service';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { User } from '../user.entity';
+import profileConfig from '../config/profile.config';
+import { error } from 'console';
 
 /**
  * Service for managing users.
@@ -23,6 +33,8 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly configService: ConfigService,
+    @Inject(profileConfig.KEY)
+    private readonly profileConfiguration: ConfigType<typeof profileConfig>,
   ) {}
   /**
    * Find all users with pagination.
@@ -31,13 +43,15 @@ export class UsersService {
    * @returns List of users.
    */
   public findAll(limit: number, page: number) {
-    const isAuthenticated = this.authService.isAuthenticated('sample-token');
-    const environment = this.configService.get('S3_BUCKET');
-    console.log(environment);
-    return [
-      { firstName: 'John', email: 'john.doe@example.com' },
-      { firstName: 'Jane', email: 'jane.doe@example.com' },
-    ];
+    throw new HttpException(
+      {
+        status: HttpStatus.MOVED_PERMANENTLY,
+        error: 'The API doesnt exist',
+        fileName: 'user.service.ts',
+        lineNumber: 88,
+      },
+      400,
+    );
   }
 
   /**
@@ -46,7 +60,19 @@ export class UsersService {
    * @returns User object.
    */
   public async findById(id: number) {
-    return await this.userRepository.findOneBy({ id });
+    let user: User | null = null;
+    try {
+      user = await this.userRepository.findOneBy({ id });
+    } catch (error) {
+      console.log(error);
+      throw new RequestTimeoutException('Unable to process your request', {
+        description: 'Error connecting to the database',
+      });
+    }
+    if (!user) {
+      throw new BadRequestException('The user is undefined');
+    }
+    return user;
   }
 
   /**
@@ -55,11 +81,31 @@ export class UsersService {
    * @returns Created user object.
    */
   public async createUser(user: CreateUserDto) {
-    const existingUser = await this.userRepository.findOne({
-      where: { email: user.email },
-    });
+    let existingUser: User | null = null;
+    try {
+      existingUser = await this.userRepository.findOne({
+        where: { email: user.email },
+      });
+    } catch (error) {
+      console.log(error);
+      throw new RequestTimeoutException('Unable to process your request', {
+        description: 'Error connecting to the database',
+      });
+    }
+
+    if (existingUser) {
+      throw new BadRequestException('The user already exists');
+    }
+
     let newUser = this.userRepository.create(user);
-    newUser = await this.userRepository.save(newUser);
+    try {
+      newUser = await this.userRepository.save(newUser);
+    } catch (error) {
+      throw new RequestTimeoutException('Unable to process your request', {
+        description: 'Error connecting to the database',
+      });
+    }
+
     return newUser;
   }
 }

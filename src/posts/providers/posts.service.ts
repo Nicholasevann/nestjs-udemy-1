@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePostDto } from 'src/posts/dtos/create-post.dto';
 import { UsersService } from 'src/users/providers/users.service';
 import { PatchPostDto } from '../dtos/patch-post.dto';
@@ -73,10 +73,13 @@ export class PostsService {
     const tags = await this.tagsService.findMultipleTags(
       patchPostDto?.tags ?? [],
     );
+    if (!tags || tags.length !== patchPostDto.tags?.length) {
+      throw new BadRequestException('Please check your tag Id');
+    }
     // find post
     const post = await this.postRepository.findOneBy({ id: patchPostDto.id });
     if (!post) {
-      throw new Error('Post not found');
+      throw new BadRequestException('Post not found');
     }
     post.title = patchPostDto.title ?? post.title;
     post.content = patchPostDto.content ?? post.content;
