@@ -12,11 +12,13 @@ import {
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/providers/auth.service';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { User } from '../user.entity';
 import profileConfig from '../config/profile.config';
 import { error } from 'console';
+import { UsersCreateManyProvider } from './users-create-many.provider';
+import { CreateManyUserDto } from '../dtos/create-many-user.dto';
 
 /**
  * Service for managing users.
@@ -35,6 +37,8 @@ export class UsersService {
     private readonly configService: ConfigService,
     @Inject(profileConfig.KEY)
     private readonly profileConfiguration: ConfigType<typeof profileConfig>,
+    private readonly dataSource: DataSource,
+    private readonly usersCreateManyProvider: UsersCreateManyProvider,
   ) {}
   /**
    * Find all users with pagination.
@@ -107,5 +111,9 @@ export class UsersService {
     }
 
     return newUser;
+  }
+
+  public async createMany(createManyUserDto: CreateManyUserDto) {
+    return await this.usersCreateManyProvider.createMany(createManyUserDto);
   }
 }
