@@ -19,6 +19,8 @@ import profileConfig from '../config/profile.config';
 import { error } from 'console';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUserDto } from '../dtos/create-many-user.dto';
+import { CreateUserProvider } from './create-user.provider.ts';
+import { FindOneUserByEmailProvider } from './find-one-user-by-email.provider';
 
 /**
  * Service for managing users.
@@ -39,6 +41,8 @@ export class UsersService {
     private readonly profileConfiguration: ConfigType<typeof profileConfig>,
     private readonly dataSource: DataSource,
     private readonly usersCreateManyProvider: UsersCreateManyProvider,
+    private readonly createUserProvider: CreateUserProvider,
+    private readonly findOneUserByEmailProvider: FindOneUserByEmailProvider,
   ) {}
   /**
    * Find all users with pagination.
@@ -77,35 +81,13 @@ export class UsersService {
    * @returns Created user object.
    */
   public async createUser(user: CreateUserDto) {
-    let existingUser: User | null = null;
-    try {
-      existingUser = await this.userRepository.findOne({
-        where: { email: user.email },
-      });
-    } catch (error) {
-      console.log(error);
-      throw new RequestTimeoutException('Unable to process your request', {
-        description: 'Error connecting to the database',
-      });
-    }
-
-    if (existingUser) {
-      throw new BadRequestException('The user already exists');
-    }
-
-    let newUser = this.userRepository.create(user);
-    try {
-      newUser = await this.userRepository.save(newUser);
-    } catch (error) {
-      throw new RequestTimeoutException('Unable to process your request', {
-        description: 'Error connecting to the database',
-      });
-    }
-
-    return newUser;
+    return await this.createUserProvider.createUser(user);
   }
 
   public async createMany(createManyUserDto: CreateManyUserDto) {
     return await this.usersCreateManyProvider.createMany(createManyUserDto);
+  }
+  public async findOneByEmail(email: string): Promise<User | null> {
+    return await this.findOneUserByEmailProvider.findOneByEmail(email);
   }
 }
