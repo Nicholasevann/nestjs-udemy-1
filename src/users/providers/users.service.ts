@@ -47,15 +47,7 @@ export class UsersService {
    * @returns List of users.
    */
   public findAll(limit: number, page: number) {
-    throw new HttpException(
-      {
-        status: HttpStatus.MOVED_PERMANENTLY,
-        error: 'The API doesnt exist',
-        fileName: 'user.service.ts',
-        lineNumber: 88,
-      },
-      400,
-    );
+    return this.userRepository.find();
   }
 
   /**

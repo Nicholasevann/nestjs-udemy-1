@@ -7,6 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { TagsService } from 'src/tags/providers/tags.service';
+import { GetPostsDto } from '../dtos/get-posts.dto';
+import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
+import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
 
 @Injectable()
 export class PostsService {
@@ -17,18 +20,14 @@ export class PostsService {
     @InjectRepository(MetaOption)
     private metaOptionsRepository: Repository<MetaOption>,
     private readonly tagsService: TagsService,
+    private readonly paginationProvider: PaginationProvider,
   ) {}
 
-  public async findAll() {
-    const post = await this.postRepository.find({
-      // can use eager or manual
-      relations: {
-        metaOptions: true,
-        author: true,
-        tags: true,
-      },
-    });
-    return post;
+  public async findAll(postQuery: GetPostsDto): Promise<Paginated<Post>> {
+    return this.paginationProvider.paginateQuery(
+      postQuery,
+      this.postRepository,
+    );
   }
   public async findAllByUser(userId: string) {
     // const user = this.userService.findById(userId);

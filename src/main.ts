@@ -11,6 +11,9 @@ async function bootstrap() {
       whitelist: true, // Automatically remove properties that do not have any decorators
       forbidNonWhitelisted: true, // Throw an error if a property is not whitelisted
       transform: true, // Automatically transform payloads to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true, // Allow implicit conversion of types
+      },
     }),
   );
   const config = new DocumentBuilder()
