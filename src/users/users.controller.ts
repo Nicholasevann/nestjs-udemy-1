@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { UsersService } from './providers/users.service';
@@ -17,6 +18,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { PatchUserDto } from './dtos/patch-user.dto';
 import { CreateManyUserDto } from './dtos/create-many-user.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
 
 @Controller('users')
 export class UsersController {
@@ -35,6 +37,8 @@ export class UsersController {
     console.log('User data:', createUserDto instanceof CreateUserDto);
     return this.usersService.createUser(createUserDto);
   }
+
+  @UseGuards(AccessTokenGuard)
   @Post('create-many')
   public createManyUser(@Body() createManyUserDto: CreateManyUserDto) {
     return this.usersService.createMany(createManyUserDto);
