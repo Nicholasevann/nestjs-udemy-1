@@ -17,7 +17,6 @@ export class FindOneUserByEmailProvider {
   public async findOneByEmail(email: string): Promise<User | null> {
     let user: User | null = null;
     try {
-      console.log('masuk');
       user = await this.userRepository.findOne({ where: { email } });
     } catch (error) {
       console.error('Error finding user by email:', error);

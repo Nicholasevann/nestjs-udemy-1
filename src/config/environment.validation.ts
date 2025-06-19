@@ -11,4 +11,8 @@ export default joi.object({
   DATABASE_NAME: joi.string().required(),
   DATABASE_USER: joi.string().required(),
   PROFILE_API_KEY: joi.string().required(),
+  JWT_SECRET: joi.string().required(),
+  JWT_TOKEN_AUDIENCE: joi.string().required(),
+  JWT_TOKEN_ISSUER: joi.string().required(),
+  JWT_ACCESS_TOKEN_TTL: joi.number().required(),
 });
