@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreatePostDto } from 'src/posts/dtos/create-post.dto';
 import { UsersService } from 'src/users/providers/users.service';
 import { PatchPostDto } from '../dtos/patch-post.dto';
@@ -10,6 +14,7 @@ import { TagsService } from 'src/tags/providers/tags.service';
 import { GetPostsDto } from '../dtos/get-posts.dto';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
 import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
+import { ActiveUserInterface } from 'src/auth/interfaces/active-user.interface';
 
 @Injectable()
 export class PostsService {
@@ -46,15 +51,29 @@ export class PostsService {
     //   { title: `Post by ${user.id}`, content: 'Content of post by user' },
     // ];
   }
-  public async createPost(createPostDto: CreatePostDto) {
+  public async createPost(
+    createPostDto: CreatePostDto,
+    user: ActiveUserInterface,
+  ) {
     // find author from db
-    const author = await this.userService.findById(createPostDto.authorId);
-    const tags = await this.tagsService.findMultipleTags(
-      createPostDto?.tags ?? [],
-    );
-
+    let author;
+    let tags;
+    try {
+      author = await this.userService.findById(user.sub);
+      tags = await this.tagsService.findMultipleTags(createPostDto?.tags ?? []);
+    } catch (error) {
+      throw new ConflictException(error);
+    }
+    if (createPostDto?.slug) {
+      const existingPost = await this.postRepository.findOneBy({
+        slug: createPostDto.slug,
+      });
+      if (existingPost) {
+        throw new ConflictException('Post with this slug already exists');
+      }
+    }
     if (!author) {
-      throw new Error('Author not found');
+      throw new BadRequestException('Author not found');
     }
     const post = this.postRepository.create({
       ...createPostDto,

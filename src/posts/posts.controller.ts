@@ -10,12 +10,17 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { PostsService } from './providers/posts.service';
 import { CreatePostDto } from 'src/posts/dtos/create-post.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PatchPostDto } from './dtos/patch-post.dto';
 import { GetPostsDto } from './dtos/get-posts.dto';
+import { REQUEST } from '@nestjs/core';
+import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
+import { ActiveUser } from 'src/auth/decorator/active-user.decorator';
+import { ActiveUserInterface } from 'src/auth/interfaces/active-user.interface';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -44,8 +49,11 @@ export class PostsController {
     description: 'The post has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
-  public createPost(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.createPost(createPostDto);
+  public createPost(
+    @Body() createPostDto: CreatePostDto,
+    @ActiveUser() user: ActiveUserInterface,
+  ) {
+    return this.postsService.createPost(createPostDto, user);
   }
 
   @Patch()
