@@ -10,7 +10,7 @@ import { HasingProvider } from './hasing.provider';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import jwtConfig from '../config/jwt.config';
-import { ActiveUserInterface } from '../interfaces/active-user.interface';
+import { GenerateTokensProvider } from './generate-tokens.provider';
 
 @Injectable()
 export class SignInProvider {
@@ -20,12 +20,9 @@ export class SignInProvider {
 
     private readonly hasingProvider: HasingProvider, // Assuming you have a HasingProvider for password hashing
 
-    private readonly jwtService: JwtService, // Injecting JwtService for token generation
-    @Inject(jwtConfig.KEY)
-    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly generateTokensProvider: GenerateTokensProvider,
   ) {}
   public async signIn(signInDto: SignInDto) {
-    console.log(signInDto);
     const user = await this.userService.findOneByEmail(signInDto.email);
     let isEqual: boolean = false;
     try {
@@ -33,7 +30,6 @@ export class SignInProvider {
         signInDto.password,
         user!.password,
       );
-      console.log(isEqual);
     } catch (error) {
       throw new RequestTimeoutException(error, {
         description: 'Error comparing passwords',
@@ -44,20 +40,6 @@ export class SignInProvider {
         description: 'The email or password is incorrect',
       });
     }
-    const accessToken = await this.jwtService.signAsync(
-      {
-        sub: user!.id,
-        email: user!.email,
-      } as ActiveUserInterface,
-      {
-        secret: this.jwtConfiguration.secret,
-        audience: this.jwtConfiguration.audience,
-        issuer: this.jwtConfiguration.issuer,
-        expiresIn: this.jwtConfiguration.accessTokenTtl,
-      },
-    );
-    return {
-      accessToken,
-    };
+    return await this.generateTokensProvider.generateTokens(user!);
   }
 }
