@@ -7,9 +7,6 @@ import {
 import { SignInDto } from '../dtos/signin.dto';
 import { UsersService } from 'src/users/providers/users.service';
 import { HasingProvider } from './hasing.provider';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigType } from '@nestjs/config';
-import jwtConfig from '../config/jwt.config';
 import { GenerateTokensProvider } from './generate-tokens.provider';
 
 @Injectable()
@@ -28,7 +25,7 @@ export class SignInProvider {
     try {
       isEqual = await this.hasingProvider.comparePassword(
         signInDto.password,
-        user!.password,
+        user?.password ?? '',
       );
     } catch (error) {
       throw new RequestTimeoutException(error, {
