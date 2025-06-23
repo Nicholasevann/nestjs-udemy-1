@@ -1,4 +1,11 @@
-import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import jwtConfig from 'src/auth/config/jwt.config';
@@ -24,25 +31,45 @@ export class GoogleAuthenticationService implements OnModuleInit {
     this.oauthClient = new OAuth2Client(clientId);
   }
   public async authentication(googleTokenDto: GoogleTokenDto) {
-    const loginTicket = await this.oauthClient.verifyIdToken({
-      idToken: googleTokenDto.token,
-    });
-    console.log(loginTicket);
+    try {
+      const loginTicket = await this.oauthClient.verifyIdToken({
+        idToken: googleTokenDto.token,
+      });
 
-    const payload = loginTicket.getPayload();
-    if (!payload) {
-      throw new Error('Invalid Google token payload');
-    }
+      const payload = loginTicket.getPayload();
+      if (!payload) {
+        throw new UnauthorizedException('Invalid Google token payload');
+      }
 
-    const {
-      email,
-      sub: googleId,
-      given_name: firstName,
-      family_name: lastName,
-    } = payload;
-    const user = await this.usersService.findOneByGoogleId(googleId);
-    if (user) {
-      return this.generateTokensProvider.generateTokens(user);
+      const {
+        email,
+        sub: googleId,
+        given_name: firstName,
+        family_name: lastName,
+      } = payload;
+
+      if (!email || !googleId || !firstName || !lastName) {
+        throw new ConflictException(
+          'Missing required user information from Google payload',
+        );
+      }
+
+      const user = await this.usersService.findOneByGoogleId(googleId);
+      if (user) {
+        return this.generateTokensProvider.generateTokens(user);
+      }
+      const newUser = await this.usersService.createGoogleUser({
+        email,
+        firstName,
+        lastName,
+        googleId,
+      });
+      return this.generateTokensProvider.generateTokens(newUser);
+    } catch (error) {
+      throw new UnauthorizedException(
+        'Error initializing Google OAuth client',
+        error,
+      );
     }
   }
 }

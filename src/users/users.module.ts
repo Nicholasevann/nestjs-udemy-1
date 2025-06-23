@@ -10,6 +10,7 @@ import { CreateUserProvider } from './providers/create-user.provider.ts';
 import { FindOneUserByEmailProvider } from './providers/find-one-user-by-email.provider';
 import profileConfig from './config/profile.config';
 import { FindOneByGoogleProvider } from './providers/find-one-by-google.provider';
+import { CreateGoogleUserProvider } from './providers/create-google-user.provider';
 
 @Module({
   controllers: [UsersController],
@@ -19,6 +20,7 @@ import { FindOneByGoogleProvider } from './providers/find-one-by-google.provider
     CreateUserProvider,
     FindOneUserByEmailProvider,
     FindOneByGoogleProvider,
+    CreateGoogleUserProvider,
   ],
   exports: [UsersService], // Exporting UsersService to be used in other modules if needed
   imports: [

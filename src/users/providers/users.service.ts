@@ -22,6 +22,8 @@ import { CreateManyUserDto } from '../dtos/create-many-user.dto';
 import { CreateUserProvider } from './create-user.provider.ts';
 import { FindOneUserByEmailProvider } from './find-one-user-by-email.provider';
 import { FindOneByGoogleProvider } from './find-one-by-google.provider';
+import { GoogleUser } from '../interfaces/google-user.interface';
+import { CreateGoogleUserProvider } from './create-google-user.provider';
 
 /**
  * Service for managing users.
@@ -45,6 +47,7 @@ export class UsersService {
     private readonly createUserProvider: CreateUserProvider,
     private readonly findOneUserByEmailProvider: FindOneUserByEmailProvider,
     private readonly findOneByGoogleProvider: FindOneByGoogleProvider, // This is a circular dependency, so we use forwardRef
+    private readonly createGoogleUserProvider: CreateGoogleUserProvider, // Assuming you have a provider for creating Google users
   ) {}
   /**
    * Find all users with pagination.
@@ -94,5 +97,8 @@ export class UsersService {
   }
   public async findOneByGoogleId(googleId: string): Promise<User | null> {
     return await this.findOneByGoogleProvider.findOneByGoogleId(googleId);
+  }
+  public async createGoogleUser(googleUser: GoogleUser) {
+    return await this.createGoogleUserProvider.createGoogleUser(googleUser);
   }
 }
