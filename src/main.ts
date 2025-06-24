@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import 'reflect-metadata';
-import { DataResponseInterceptor } from './common/interceptors/data-response.interceptor';
-
+import { config } from 'aws-sdk';
+import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
@@ -17,7 +17,7 @@ async function bootstrap() {
       },
     }),
   );
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setVersion('1.0')
     .setTitle('API Documentation')
     .setDescription('API documentation for the application')
@@ -29,8 +29,17 @@ async function bootstrap() {
         : 'http://localhost:3000',
     )
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
+  const configService = app.get(ConfigService);
+  config.update({
+    credentials: {
+      accessKeyId: configService.get<string>('appConfig.awsAccessKeyId') ?? '',
+      secretAccessKey:
+        configService.get<string>('appConfig.awsSecretAccessKey') ?? '',
+    },
+    region: configService.get<string>('appConfig.awsRegion'),
+  });
   app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
 }
