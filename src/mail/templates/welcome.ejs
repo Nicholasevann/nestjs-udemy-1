@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Our Service!</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f6f6f6;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        background: #fff;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 32px 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        color: #2d7ff9;
+      }
+      p {
+        color: #333;
+        font-size: 16px;
+      }
+      .footer {
+        margin-top: 32px;
+        font-size: 13px;
+        color: #888;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome, <%= name %>!</h1>
+      <p>
+        Thank you for joining <strong>Our Service</strong>.<br />
+        We're excited to have you on board.
+      </p>
+      <p>
+        If you have any questions, feel free to reply to this email.<br />
+        We're here to help!
+      </p>
+      <ul>
+        <li>Email <%= email %></li>
+        <li>Login Url <%= loginUrl %></li>
+      </ul>
+      <div class="footer">
+        &copy; <%= new Date().getFullYear() %> Our Service. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
