@@ -48,7 +48,7 @@ describe('UserService', () => {
     it('it should be defined', () => {
       expect(service).toBeDefined();
     });
-    describe('creatreUser', () => {
+    describe('createUser', () => {
       it('should should be defined', () => {
         expect(service.createUser).toBeDefined();
       });
@@ -57,7 +57,7 @@ describe('UserService', () => {
           firstName: 'John',
           lastName: 'Doe',
           email: 'johndoe@gmail.com',
-          password: 'password123',
+          password: 'hashedPassword',
         });
         expect(user.firstName).toEqual('John');
       });
